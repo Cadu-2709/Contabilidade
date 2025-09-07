@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema Contábil</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Sistema Contábil</h1>
+    </header>
+    
+    <main class="container-principal">
+        <div class="coluna-esquerda">
+            <h2>Ações</h2>
+            <button id="btnAbrirModal">Adicionar Lançamento Contábil</button>
+        </div>
+
+        <div class="coluna-direita">
+            <h2>Últimos Lançamentos</h2>
+            <div class="tabela-container">
+                <table id="tabela-lancamentos">
+                    <thead>
+                        <tr>
+                            <th>Cód. Conta</th>
+                            <th>Nome da Conta</th>
+                            <th class="valor">Débito</th>
+                            <th class="valor">Crédito</th>
+                        </tr>
+                    </thead>
+                    <tbody id="corpo-tabela-lancamentos">
+                        </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="2">TOTAIS</td>
+                            <td class="valor" id="total-debito-tabela">R$ 0,00</td>
+                            <td class="valor" id="total-credito-tabela">R$ 0,00</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <div id="modalLancamento" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <header class="modal-header">
+                <h2>Novo Lançamento Contábil</h2>
+                <button id="btnFecharModal" class="close-button">&times;</button>
+            </header>
+            <form id="formLancamento">
+                <div class="form-group">
+                    <label for="dataLancamento">Data:</label>
+                    <input type="date" id="dataLancamento" required>
+                </div>
+                <div class="form-group">
+                    <label for="historico">Histórico:</label>
+                    <textarea id="historico" rows="2" required></textarea>
+                </div>
+                <hr>
+                <h3>Partidas (Débitos e Créditos)</h3>
+                <div id="partidasContainer"></div>
+                <button type="button" id="btnAdicionarPartida" class="btn-add">+</button>
+                <footer class="modal-footer">
+                    <div class="totals">
+                        <p>Total Débito: <span id="totalDebito">0.00</span></p>
+                        <p>Total Crédito: <span id="totalCredito">0.00</span></p>
+                    </div>
+                    <button type="submit" id="btnSalvar" class="btn-primary">
+                        <span class="btn-text">Salvar Lançamento</span>
+                        <span class="spinner" style="display: none;"></span>
+                    </button>
+                </footer>
+            </form>
+        </div>
+    </div>
+
+    <div id="toast-container"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>

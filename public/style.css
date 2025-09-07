@@ -1,0 +1,139 @@
+/* ... Estilos existentes ... */
+:root {
+    --primary-color: #3498db;
+    --error-color: #e74c3c;
+    --success-color: #2ecc71;
+    --light-gray: #ecf0f1;
+    --gray: #bdc3c7;
+    --dark-gray: #7f8c8d;
+    --text-color: #34495e;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background-color: #f4f4f9;
+    color: var(--text-color);
+    margin: 0;
+}
+
+header {
+    background-color: white;
+    padding: 10px 40px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border-bottom: 1px solid var(--light-gray);
+}
+
+/* NOVO: Layout Principal */
+.container-principal {
+    display: flex;
+    gap: 30px;
+    padding: 30px 40px;
+}
+.coluna-esquerda {
+    flex: 1;
+    max-width: 300px;
+}
+.coluna-direita {
+    flex: 3;
+}
+
+h1, h2 { color: var(--text-color); }
+h2 { border-bottom: 2px solid var(--primary-color); padding-bottom: 5px; margin-top: 0; }
+
+button { cursor: pointer; border-radius: 5px; border: none; padding: 10px 15px; font-size: 1rem; }
+#btnAbrirModal { background-color: var(--primary-color); color: white; width: 100%; }
+
+/* NOVO: Estilos da Tabela */
+.tabela-container {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+#tabela-lancamentos {
+    width: 100%;
+    border-collapse: collapse;
+}
+#tabela-lancamentos th, #tabela-lancamentos td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid var(--light-gray);
+}
+#tabela-lancamentos thead tr {
+    background-color: var(--primary-color);
+    color: white;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+}
+#tabela-lancamentos tbody tr:nth-child(even) {
+    background-color: #f8f9fa;
+}
+#tabela-lancamentos tbody tr:hover {
+    background-color: #e9ecef;
+}
+#tabela-lancamentos tfoot {
+    font-weight: bold;
+    color: var(--text-color);
+}
+#tabela-lancamentos .valor {
+    text-align: right;
+    font-family: 'Courier New', Courier, monospace;
+}
+
+/* ... Resto dos estilos para o Modal, Toasts, etc. ... */
+/* Modal */
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+.modal-content { background: white; padding: 25px; border-radius: 8px; width: 90%; max-width: 800px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+.modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--light-gray); padding-bottom: 10px; margin-bottom: 20px; }
+.close-button { background: none; font-size: 1.7rem; color: var(--gray); }
+.close-button:hover { color: var(--dark-gray); }
+
+/* Formulário */
+.form-group { margin-bottom: 15px; }
+label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 0.9rem; }
+input[type="date"], textarea, input[type="text"], input[type="number"] {
+    width: 100%; padding: 10px; border: 1px solid var(--gray); border-radius: 4px; box-sizing: border-box; font-size: 1rem;
+}
+textarea { resize: vertical; }
+
+/* Partidas */
+.partida-item {
+    display: grid; grid-template-columns: 3fr 1fr 1fr auto; gap: 10px;
+    margin-bottom: 10px; align-items: flex-start; position: relative;
+}
+.autocomplete-container { position: relative; }
+.autocomplete-suggestions {
+    position: absolute; top: 100%; left: 0; right: 0;
+    border: 1px solid var(--gray); background: white; z-index: 1001;
+    max-height: 200px; overflow-y: auto; border-radius: 0 0 5px 5px;
+}
+.autocomplete-suggestions div { padding: 10px; cursor: pointer; }
+.autocomplete-suggestions div:hover { background-color: var(--light-gray); }
+.autocomplete-suggestions div strong { color: var(--primary-color); }
+
+.btn-add { background-color: var(--light-gray); color: var(--text-color); }
+.btn-remove { background-color: transparent; color: var(--error-color); border: 1px solid var(--error-color); height: 42px; width: 42px; }
+.btn-remove:hover { background-color: var(--error-color); color: white; }
+
+/* Rodapé do Modal */
+.modal-footer { margin-top: 20px; border-top: 1px solid var(--light-gray); padding-top: 15px; display: flex; justify-content: space-between; align-items: center; }
+.totals span.error { color: var(--error-color); }
+.btn-primary { background-color: var(--primary-color); color: white; position: relative; }
+.btn-primary:disabled { background-color: var(--gray); cursor: not-allowed; }
+.spinner {
+    border: 2px solid rgba(255, 255, 255, 0.3); border-radius: 50%; border-top-color: #fff;
+    width: 18px; height: 18px; animation: spin 1s ease-in-out infinite;
+    display: inline-block;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Notificações (Toasts) */
+#toast-container { position: fixed; top: 20px; right: 20px; z-index: 2000; }
+.toast {
+    padding: 15px 20px; margin-bottom: 10px; border-radius: 5px;
+    color: white; font-weight: 600; box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+    opacity: 0; transform: translateX(100%); animation: slideIn 0.5s forwards;
+}
+.toast.success { background-color: var(--success-color); }
+.toast.error { background-color: var(--error-color); }
+@keyframes slideIn { to { opacity: 1; transform: translateX(0); } }
