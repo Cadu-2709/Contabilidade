@@ -4,6 +4,7 @@ const cors = require('cors');
 const path = require('path');
 const contabilidadeRoutes = require('./routes/contabilidadeRoutes');
 const relatorioRoutes = require('./routes/relatorioRoutes');
+const diagnosticoRoutes = require('./routes/diagnosticoRoutes'); // NOVO
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -14,6 +15,7 @@ app.use(express.static(path.join(__dirname, '..', 'public')));
 
 app.use('/api', contabilidadeRoutes);
 app.use('/api/relatorios', relatorioRoutes);
+app.use('/api/diagnostico', diagnosticoRoutes); // NOVO
 
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
@@ -22,4 +24,3 @@ app.get('/', (req, res) => {
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
 });
-

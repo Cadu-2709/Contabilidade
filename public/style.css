@@ -34,6 +34,7 @@ header {
 }
 .coluna-direita {
     flex: 3;
+    min-width: 0; /* Ajuda a previnir overflow de tabelas largas */
 }
 
 h1, h2 { color: var(--text-color); }
@@ -42,7 +43,7 @@ h2 { border-bottom: 2px solid var(--primary-color); padding-bottom: 5px; margin-
 button { cursor: pointer; border-radius: 5px; border: none; padding: 10px 15px; font-size: 1rem; }
 #btnAbrirModal { background-color: var(--primary-color); color: white; width: 100%; }
 
-/* Card de Ação (DRE) */
+/* Card de Ação */
 .card-acao {
     background-color: white;
     padding: 20px;
@@ -62,7 +63,7 @@ button { cursor: pointer; border-radius: 5px; border: none; padding: 10px 15px; 
 .botoes-relatorio button {
     flex-grow: 1;
 }
-#btn-gerar-dre {
+#btn-gerar-dre, #btn-gerar-balancete {
     background-color: var(--success-color);
     color: white;
 }
@@ -76,61 +77,74 @@ button { cursor: pointer; border-radius: 5px; border: none; padding: 10px 15px; 
     background-color: white;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    overflow: hidden;
     margin-bottom: 30px;
+    /* CORREÇÃO PARA O SCROLL */
+    overflow: auto;
+    max-height: 80vh;
 }
-#tabela-lancamentos, #tabela-dre {
+
+#tabela-lancamentos, #tabela-relatorio {
     width: 100%;
     border-collapse: collapse;
 }
 #tabela-lancamentos th, #tabela-lancamentos td,
-#tabela-dre th, #tabela-dre td {
+#tabela-relatorio th, #tabela-relatorio td {
     padding: 12px 15px;
     text-align: left;
     border-bottom: 1px solid var(--light-gray);
+    white-space: nowrap; /* Evita que o texto quebre em várias linhas */
 }
-#tabela-lancamentos thead tr, #tabela-dre thead tr {
+
+#tabela-lancamentos thead tr, #tabela-relatorio thead tr {
     background-color: var(--primary-color);
     color: white;
     font-size: 0.9rem;
     text-transform: uppercase;
+    position: sticky; /* Cabeçalho fixo ao rolar */
+    top: 0;
+    z-index: 1;
 }
-#tabela-dre thead tr {
+
+#tabela-relatorio thead tr {
     background-color: var(--dark-gray);
 }
 #tabela-lancamentos tbody tr:nth-child(even),
-#tabela-dre tbody tr:nth-child(even) {
+#tabela-relatorio tbody tr:nth-child(even) {
     background-color: #f8f9fa;
 }
 #tabela-lancamentos tbody tr:hover,
-#tabela-dre tbody tr:hover {
+#tabela-relatorio tbody tr:hover {
     background-color: #e9ecef;
 }
 #tabela-lancamentos tfoot {
     font-weight: bold;
     color: var(--text-color);
+    position: sticky; /* Rodapé fixo ao rolar */
+    bottom: 0;
+    background-color: white;
 }
-#tabela-lancamentos .valor, #tabela-dre td {
+#tabela-lancamentos .valor, #tabela-relatorio td {
     text-align: right;
     font-family: 'Courier New', Courier, monospace;
 }
-#tabela-dre td:first-child {
+#tabela-relatorio td:first-child {
     text-align: left;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    white-space: normal;
 }
 
-/* Estilos da Tabela DRE */
-#tabela-dre {
+/* Estilos da Tabela Relatório (DRE/Balancete) */
+#tabela-relatorio {
     font-size: 0.9rem;
 }
-#tabela-dre th, #tabela-dre td {
+#tabela-relatorio th, #tabela-relatorio td {
     padding: 8px 10px;
 }
-#tabela-dre tbody .linha-sintetica {
+#tabela-relatorio tbody .linha-sintetica {
     font-weight: bold;
     background-color: #f8f9fa;
 }
-#tabela-dre td.negativo {
+#tabela-relatorio td.negativo {
     color: var(--error-color);
 }
 
@@ -180,7 +194,6 @@ textarea { resize: vertical; }
     display: inline-block;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
-
 
 /* Notificações (Toasts) */
 #toast-container { position: fixed; top: 20px; right: 20px; z-index: 2000; }

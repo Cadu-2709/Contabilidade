@@ -23,8 +23,19 @@
                     <input type="number" id="ano-dre" placeholder="Ex: 2025" value="2025">
                 </div>
                 <div class="botoes-relatorio">
-                    <button id="btn-gerar-dre">Gerar na Tela</button>
-                    <button id="btn-download-dre-pdf" class="btn-pdf">Baixar PDF</button>
+                    <button id="btn-gerar-dre">Gerar DRE</button>
+                    <button id="btn-download-dre-pdf" class="btn-pdf">PDF DRE</button>
+                </div>
+            </div>
+
+            <div class="card-acao">
+                <h2>Balancete de Verificação</h2>
+                <div class="form-group">
+                    <label for="ano-balancete">Ano:</label>
+                    <input type="number" id="ano-balancete" placeholder="Ex: 2025" value="2025">
+                </div>
+                <div class="botoes-relatorio">
+                    <button id="btn-gerar-balancete">Gerar Balancete</button>
                 </div>
             </div>
         </div>
@@ -53,19 +64,19 @@
                 </table>
             </div>
 
-            <div id="container-dre" class="tabela-container" style="display: none;">
-                <h2>DRE - <span id="ano-dre-titulo"></span></h2>
-                <table id="tabela-dre">
+            <div id="container-relatorio" class="tabela-container" style="display: none;">
+                <h2>Relatório: <span id="nome-relatorio-titulo"></span> - <span id="ano-relatorio-titulo"></span></h2>
+                <table id="tabela-relatorio">
                     <thead>
                         <tr>
                             <th>Conta</th>
                             <th>Jan</th><th>Fev</th><th>Mar</th><th>Abr</th><th>Mai</th>
                             <th>Jun</th><th>Jul</th><th>Ago</th><th>Set</th><th>Out</th>
                             <th>Nov</th><th>Dez</th>
-                            <th>Total Ano</th>
+                            <th>Saldo/Mov. Ano</th>
                         </tr>
                     </thead>
-                    <tbody id="corpo-tabela-dre"></tbody>
+                    <tbody id="corpo-tabela-relatorio"></tbody>
                 </table>
             </div>
         </div>
@@ -103,7 +114,14 @@
             </form>
         </div>
     </div>
+<h2>Ações</h2>
+<button id="btnAbrirModal">Adicionar Lançamento Contábil</button>
 
+<button id="btnDiagnostico" style="margin-top: 15px; background-color: #9b59b6; color: white;">
+    Executar Diagnóstico de Lançamentos
+</button>
+
+<div class="card-acao">
     <div id="toast-container"></div>
 
     <script src="app.js"></script>

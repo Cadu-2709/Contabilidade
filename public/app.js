@@ -14,13 +14,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const corpoTabela = document.getElementById('corpo-tabela-lancamentos');
     const totalDebitoTabela = document.getElementById('total-debito-tabela');
     const totalCreditoTabela = document.getElementById('total-credito-tabela');
+    
+    // Seletores DRE
     const btnGerarDre = document.getElementById('btn-gerar-dre');
     const inputAnoDre = document.getElementById('ano-dre');
-    const containerDre = document.getElementById('container-dre');
-    const corpoTabelaDre = document.getElementById('corpo-tabela-dre');
-    const anoDreTitulo = document.getElementById('ano-dre-titulo');
-    const containerLancamentos = document.getElementById('container-lancamentos');
     const btnDownloadDrePdf = document.getElementById('btn-download-dre-pdf');
+    
+    // Seletores Balancete
+    const btnGerarBalancete = document.getElementById('btn-gerar-balancete');
+    const inputAnoBalancete = document.getElementById('ano-balancete');
+
+    // Seletores genéricos de relatório
+    const containerLancamentos = document.getElementById('container-lancamentos');
+    const containerRelatorio = document.getElementById('container-relatorio');
+    const corpoTabelaRelatorio = document.getElementById('corpo-tabela-relatorio');
+    const nomeRelatorioTitulo = document.getElementById('nome-relatorio-titulo');
+    const anoRelatorioTitulo = document.getElementById('ano-relatorio-titulo');
 
     let planoDeContas = [];
     const formatadorMoeda = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -37,6 +46,24 @@ document.addEventListener('DOMContentLoaded', () => {
         toast.textContent = message;
         container.appendChild(toast);
         setTimeout(() => toast.remove(), 4000);
+    }
+
+     const btnDiagnostico = document.getElementById('btnDiagnostico');
+    if (btnDiagnostico) {
+        btnDiagnostico.addEventListener('click', async () => {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/diagnostico/lancamentos`);
+                const data = await response.json();
+                if (data.length === 0) {
+                    alert('DIAGNÓSTICO: Nenhum lançamento encontrado no banco de dados.');
+                } else {
+                    // Exibe os dados em um alerta para fácil visualização
+                    console.log('DIAGNÓSTICO:\n\n' + JSON.stringify(data, null, 2));
+                }
+            } catch (error) {
+                alert('Erro ao executar o diagnóstico: ' + error.message);
+            }
+        });
     }
 
     // --- Funções de Lógica Principal ---
@@ -88,7 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
-    function renderizarLinhasDre(contas, nivel = 0) {
+    function renderizarLinhasRelatorio(contas, nivel = 0) {
         let html = '';
         const padding = nivel * 25;
 
@@ -96,41 +123,45 @@ document.addEventListener('DOMContentLoaded', () => {
             html += `<tr class="linha-sintetica">`;
             html += `<td style="padding-left: ${padding + 15}px;">${conta.codigo_conta} - ${conta.nome_conta}</td>`;
             
-            conta.meses.forEach(valor => {
+            (conta.meses || Array(12).fill(0)).forEach(valor => {
                 html += `<td class="${valor < 0 ? 'negativo' : ''}">${formatadorMoeda.format(valor)}</td>`;
             });
             html += `<td class="${conta.total_ano < 0 ? 'negativo' : ''}">${formatadorMoeda.format(conta.total_ano)}</td>`;
             html += `</tr>`;
 
             if (conta.children && conta.children.length > 0) {
-                html += renderizarLinhasDre(conta.children, nivel + 1);
+                html += renderizarLinhasRelatorio(conta.children, nivel + 1);
             }
         }
         return html;
     }
 
-    async function gerarRelatorioDre() {
-        const ano = inputAnoDre.value;
+    async function gerarRelatorio(tipo) {
+        const ano = tipo === 'DRE' ? inputAnoDre.value : inputAnoBalancete.value;
+        const endpoint = tipo === 'DRE' ? 'dre' : 'balancete';
+
         if (!ano) {
             showToast('Por favor, informe um ano.', 'error');
             return;
         }
         try {
-            const response = await fetch(`${API_BASE_URL}/api/relatorios/dre?ano=${ano}`);
+            const response = await fetch(`${API_BASE_URL}/api/relatorios/${endpoint}?ano=${ano}`);
             if (!response.ok) {
                 const err = await response.json();
                 throw new Error(err.message);
             }
-            const dreData = await response.json();
+            const reportData = await response.json();
             
-            corpoTabelaDre.innerHTML = renderizarLinhasDre(dreData);
+            corpoTabelaRelatorio.innerHTML = renderizarLinhasRelatorio(reportData);
 
-            anoDreTitulo.textContent = ano;
-            if(containerLancamentos) containerLancamentos.style.display = 'none';
-            if(containerDre) containerDre.style.display = 'block';
-            showToast('Relatório DRE gerado com sucesso!', 'success');
+            nomeRelatorioTitulo.textContent = tipo === 'DRE' ? 'DRE' : 'Balancete';
+            anoRelatorioTitulo.textContent = ano;
+            if (containerLancamentos) containerLancamentos.style.display = 'none';
+            if (containerRelatorio) containerRelatorio.style.display = 'block';
+            showToast(`Relatório ${tipo} gerado com sucesso!`, 'success');
+
         } catch (error) {
-            console.error('Erro ao gerar DRE:', error);
+            console.error(`Erro ao gerar ${tipo}:`, error);
             showToast(error.message, 'error');
         }
     }
@@ -214,7 +245,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (btnFecharModal) btnFecharModal.addEventListener('click', () => modal.style.display = 'none');
     if (btnAdicionarPartida) btnAdicionarPartida.addEventListener('click', adicionarNovaPartida);
-    if (btnGerarDre) btnGerarDre.addEventListener('click', gerarRelatorioDre);
+    if (btnGerarDre) btnGerarDre.addEventListener('click', () => gerarRelatorio('DRE'));
+    if (btnGerarBalancete) btnGerarBalancete.addEventListener('click', () => gerarRelatorio('BALANCETE'));
 
     if (btnDownloadDrePdf) {
         btnDownloadDrePdf.addEventListener('click', () => {
