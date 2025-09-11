@@ -14,17 +14,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const corpoTabela = document.getElementById('corpo-tabela-lancamentos');
     const totalDebitoTabela = document.getElementById('total-debito-tabela');
     const totalCreditoTabela = document.getElementById('total-credito-tabela');
+    const btnGerarDre = document.getElementById('btn-gerar-dre');
+    const inputAnoDre = document.getElementById('ano-dre');
+    const containerDre = document.getElementById('container-dre');
+    const corpoTabelaDre = document.getElementById('corpo-tabela-dre');
+    const anoDreTitulo = document.getElementById('ano-dre-titulo');
+    const containerLancamentos = document.getElementById('container-lancamentos');
+    const btnDownloadDrePdf = document.getElementById('btn-download-dre-pdf');
 
     let planoDeContas = [];
+    const formatadorMoeda = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
 
-    // --- Funções Auxiliares (Declaradas Primeiro para Corrigir o Bug) ---
-
-    // Mostra uma notificação "toast"
+    // --- Funções Auxiliares ---
     function showToast(message, type = 'success') {
         const container = document.getElementById('toast-container');
         if (!container) {
-            console.error('Toast container not found!');
-            alert(message); // Fallback para alert se o container não existir
+            alert(message);
             return;
         }
         const toast = document.createElement('div');
@@ -34,25 +39,20 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => toast.remove(), 4000);
     }
 
-    // --- Funções Principais de Lógica ---
-
-    // Busca e renderiza as partidas na tabela principal
+    // --- Funções de Lógica Principal ---
     async function carregarPartidas() {
+        if (!corpoTabela) return;
         try {
             const response = await fetch(`${API_BASE_URL}/api/partidas`);
             if (!response.ok) throw new Error('Falha ao carregar lançamentos.');
             const partidas = await response.json();
 
-            corpoTabela.innerHTML = ''; // Limpa a tabela antes de preencher
-            let totalDebito = 0;
-            let totalCredito = 0;
-
-            const formatadorMoeda = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+            corpoTabela.innerHTML = '';
+            let totalDebito = 0, totalCredito = 0;
 
             partidas.forEach(partida => {
                 const tr = document.createElement('tr');
                 const valorFormatado = formatadorMoeda.format(partida.valor);
-
                 const debitoTd = (partida.tipo_partida === 'D') ? valorFormatado : '';
                 const creditoTd = (partida.tipo_partida === 'C') ? valorFormatado : '';
                 
@@ -70,14 +70,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
             totalDebitoTabela.textContent = formatadorMoeda.format(totalDebito);
             totalCreditoTabela.textContent = formatadorMoeda.format(totalCredito);
-
         } catch (error) {
             console.error(error);
             showToast(error.message, 'error');
         }
     }
 
-    // Busca o plano de contas da API
     async function carregarDadosIniciais() {
         try {
             const response = await fetch(`${API_BASE_URL}/api/plano-contas`);
@@ -89,8 +87,54 @@ document.addEventListener('DOMContentLoaded', () => {
             showToast(error.message, 'error');
         }
     }
+    
+    function renderizarLinhasDre(contas, nivel = 0) {
+        let html = '';
+        const padding = nivel * 25;
 
-    // Adiciona uma nova linha de partida
+        for (const conta of contas) {
+            html += `<tr class="linha-sintetica">`;
+            html += `<td style="padding-left: ${padding + 15}px;">${conta.codigo_conta} - ${conta.nome_conta}</td>`;
+            
+            conta.meses.forEach(valor => {
+                html += `<td class="${valor < 0 ? 'negativo' : ''}">${formatadorMoeda.format(valor)}</td>`;
+            });
+            html += `<td class="${conta.total_ano < 0 ? 'negativo' : ''}">${formatadorMoeda.format(conta.total_ano)}</td>`;
+            html += `</tr>`;
+
+            if (conta.children && conta.children.length > 0) {
+                html += renderizarLinhasDre(conta.children, nivel + 1);
+            }
+        }
+        return html;
+    }
+
+    async function gerarRelatorioDre() {
+        const ano = inputAnoDre.value;
+        if (!ano) {
+            showToast('Por favor, informe um ano.', 'error');
+            return;
+        }
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/relatorios/dre?ano=${ano}`);
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(err.message);
+            }
+            const dreData = await response.json();
+            
+            corpoTabelaDre.innerHTML = renderizarLinhasDre(dreData);
+
+            anoDreTitulo.textContent = ano;
+            if(containerLancamentos) containerLancamentos.style.display = 'none';
+            if(containerDre) containerDre.style.display = 'block';
+            showToast('Relatório DRE gerado com sucesso!', 'success');
+        } catch (error) {
+            console.error('Erro ao gerar DRE:', error);
+            showToast(error.message, 'error');
+        }
+    }
+
     function adicionarNovaPartida() {
         const partidaId = Date.now();
         const partidaDiv = document.createElement('div');
@@ -110,15 +154,12 @@ document.addEventListener('DOMContentLoaded', () => {
         partidasContainer.appendChild(partidaDiv);
     }
 
-    // Mostra sugestões de autocompletar
     function mostrarSugestoes(input) {
         const valor = input.value.toLowerCase();
         const containerSugestoes = input.parentElement.querySelector('.autocomplete-suggestions');
-        
         document.querySelectorAll('.autocomplete-suggestions').forEach(sug => {
             if (sug !== containerSugestoes) sug.innerHTML = '';
         });
-        
         containerSugestoes.innerHTML = '';
         
         const sugestoes = planoDeContas.filter(c => 
@@ -140,7 +181,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Atualiza os totais e o estado do botão salvar
     function atualizarTotais() {
         let totalDebito = 0, totalCredito = 0;
         document.querySelectorAll('.partida-item').forEach(item => {
@@ -159,47 +199,59 @@ document.addEventListener('DOMContentLoaded', () => {
         btnSalvar.disabled = !totaisIguais || totalDebito === 0;
     }
 
-    // --- Event Listeners ---
-    btnAbrirModal.addEventListener('click', () => {
-        form.reset();
-        partidasContainer.innerHTML = '';
-        adicionarNovaPartida();
-        adicionarNovaPartida();
-        atualizarTotais();
-        modal.style.display = 'flex';
-        document.getElementById('dataLancamento').valueAsDate = new Date();
-    });
+    // --- Vinculação de Eventos ---
+    if (btnAbrirModal) {
+        btnAbrirModal.addEventListener('click', () => {
+            form.reset();
+            partidasContainer.innerHTML = '';
+            adicionarNovaPartida();
+            adicionarNovaPartida();
+            atualizarTotais();
+            modal.style.display = 'flex';
+            document.getElementById('dataLancamento').valueAsDate = new Date();
+        });
+    }
 
-    btnFecharModal.addEventListener('click', () => modal.style.display = 'none');
-    btnAdicionarPartida.addEventListener('click', adicionarNovaPartida);
+    if (btnFecharModal) btnFecharModal.addEventListener('click', () => modal.style.display = 'none');
+    if (btnAdicionarPartida) btnAdicionarPartida.addEventListener('click', adicionarNovaPartida);
+    if (btnGerarDre) btnGerarDre.addEventListener('click', gerarRelatorioDre);
 
-    partidasContainer.addEventListener('focusin', e => {
-        if (e.target.classList.contains('conta-search')) {
-            mostrarSugestoes(e.target);
-        }
-    });
-    
-    partidasContainer.addEventListener('input', e => {
-        if (e.target.classList.contains('conta-search')) {
-            mostrarSugestoes(e.target);
-        }
-        if (e.target.classList.contains('valor-debito') || e.target.classList.contains('valor-credito')) {
-            const partidaItem = e.target.closest('.partida-item');
-            if (e.target.classList.contains('valor-debito') && e.target.value > 0) {
-                partidaItem.querySelector('.valor-credito').value = '';
-            } else if (e.target.classList.contains('valor-credito') && e.target.value > 0) {
-                partidaItem.querySelector('.valor-debito').value = '';
+    if (btnDownloadDrePdf) {
+        btnDownloadDrePdf.addEventListener('click', () => {
+            const ano = inputAnoDre.value;
+            if (!ano) {
+                showToast('Por favor, informe um ano.', 'error');
+                return;
             }
-            atualizarTotais();
-        }
-    });
+            window.location.href = `${API_BASE_URL}/api/relatorios/dre/pdf?ano=${ano}`;
+        });
+    }
 
-    partidasContainer.addEventListener('click', e => {
-        if (e.target.classList.contains('btn-remove')) {
-            e.target.closest('.partida-item').remove();
-            atualizarTotais();
-        }
-    });
+    if (partidasContainer) {
+        partidasContainer.addEventListener('focusin', e => {
+            if (e.target.classList.contains('conta-search')) mostrarSugestoes(e.target);
+        });
+        
+        partidasContainer.addEventListener('input', e => {
+            if (e.target.classList.contains('conta-search')) mostrarSugestoes(e.target);
+            if (e.target.classList.contains('valor-debito') || e.target.classList.contains('valor-credito')) {
+                const partidaItem = e.target.closest('.partida-item');
+                if (e.target.classList.contains('valor-debito') && e.target.value > 0) {
+                    partidaItem.querySelector('.valor-credito').value = '';
+                } else if (e.target.classList.contains('valor-credito') && e.target.value > 0) {
+                    partidaItem.querySelector('.valor-debito').value = '';
+                }
+                atualizarTotais();
+            }
+        });
+
+        partidasContainer.addEventListener('click', e => {
+            if (e.target.classList.contains('btn-remove')) {
+                e.target.closest('.partida-item').remove();
+                atualizarTotais();
+            }
+        });
+    }
     
     document.addEventListener('click', (e) => {
         if (!e.target.closest('.autocomplete-container')) {
@@ -207,67 +259,72 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    form.addEventListener('submit', async e => {
-        e.preventDefault();
-        btnSalvar.disabled = true;
-        btnSalvar.querySelector('.spinner').style.display = 'inline-block';
-        btnSalvar.querySelector('.btn-text').textContent = 'Salvando...';
+    if (form) {
+        form.addEventListener('submit', async e => {
+            e.preventDefault();
+            const btnText = btnSalvar.querySelector('.btn-text');
+            const spinner = btnSalvar.querySelector('.spinner');
 
-        const partidas = [];
-        let formValido = true;
-        document.querySelectorAll('.partida-item').forEach(item => {
-            const id_conta = parseInt(item.querySelector('.conta-id').value);
-            const tipo_conta = item.querySelector('.conta-tipo').value;
-            const valorDebito = parseFloat(item.querySelector('.valor-debito').value) || 0;
-            const valorCredito = parseFloat(item.querySelector('.valor-credito').value) || 0;
+            btnSalvar.disabled = true;
+            spinner.style.display = 'inline-block';
+            btnText.textContent = 'Salvando...';
 
-            if (valorDebito > 0 || valorCredito > 0) {
-                if (!id_conta || tipo_conta !== 'ANALITICA') {
-                    formValido = false;
+            const partidas = [];
+            let formValido = true;
+            document.querySelectorAll('.partida-item').forEach(item => {
+                const id_conta = parseInt(item.querySelector('.conta-id').value);
+                const tipo_conta = item.querySelector('.conta-tipo').value;
+                const valorDebito = parseFloat(item.querySelector('.valor-debito').value) || 0;
+                const valorCredito = parseFloat(item.querySelector('.valor-credito').value) || 0;
+
+                if (valorDebito > 0 || valorCredito > 0) {
+                    if (!id_conta || tipo_conta !== 'ANALITICA') {
+                        formValido = false;
+                    }
+                }
+                
+                if (id_conta && (valorDebito > 0 || valorCredito > 0)) {
+                    if (valorDebito > 0) partidas.push({ id_conta, tipo: 'D', valor: valorDebito });
+                    else if (valorCredito > 0) partidas.push({ id_conta, tipo: 'C', valor: valorCredito });
+                }
+            });
+
+            if (!formValido) {
+                showToast('Lançamentos com valor devem ter uma conta analítica [A] selecionada.', 'error');
+            } else {
+                const lancamento = {
+                    data_lancamento: document.getElementById('dataLancamento').value,
+                    historico: document.getElementById('historico').value,
+                    partidas,
+                };
+                
+                try {
+                    const response = await fetch(`${API_BASE_URL}/api/lancamentos`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(lancamento),
+                    });
+                    const result = await response.json();
+                    if (!response.ok) throw new Error(result.message);
+                    
+                    showToast('Lançamento salvo com sucesso!', 'success');
+                    modal.style.display = 'none';
+                    await carregarPartidas();
+                } catch (error) {
+                    showToast(error.message, 'error');
                 }
             }
             
-            if (id_conta && (valorDebito > 0 || valorCredito > 0)) {
-                if (valorDebito > 0) partidas.push({ id_conta, tipo: 'D', valor: valorDebito });
-                else if (valorCredito > 0) partidas.push({ id_conta, tipo: 'C', valor: valorCredito });
-            }
+            btnSalvar.disabled = false;
+            spinner.style.display = 'none';
+            btnText.textContent = 'Salvar Lançamento';
         });
-
-        if (!formValido) {
-            showToast('Lançamentos com valor devem ter uma conta analítica [A] selecionada.', 'error');
-        } else {
-            const lancamento = {
-                data_lancamento: document.getElementById('dataLancamento').value,
-                historico: document.getElementById('historico').value,
-                partidas,
-            };
-            
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/lancamentos`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(lancamento),
-                });
-                const result = await response.json();
-                if (!response.ok) throw new Error(result.message);
-                
-                showToast('Lançamento salvo com sucesso!', 'success');
-                modal.style.display = 'none';
-                carregarPartidas(); // ATUALIZA A TABELA PRINCIPAL
-            } catch (error) {
-                showToast(error.message, 'error');
-            }
-        }
-        
-        btnSalvar.disabled = false;
-        btnSalvar.querySelector('.spinner').style.display = 'none';
-        btnSalvar.querySelector('.btn-text').textContent = 'Salvar Lançamento';
-    });
+    }
 
     // --- INICIALIZAÇÃO ---
     async function inicializarApp() {
-        await carregarDadosIniciais(); // Carrega o plano de contas primeiro
-        carregarPartidas(); // Depois carrega os lançamentos existentes
+        await carregarDadosIniciais();
+        await carregarPartidas();
     }
 
     inicializarApp();

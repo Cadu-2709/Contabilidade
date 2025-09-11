@@ -1,4 +1,3 @@
-/* ... Estilos existentes ... */
 :root {
     --primary-color: #3498db;
     --error-color: #e74c3c;
@@ -23,7 +22,7 @@ header {
     border-bottom: 1px solid var(--light-gray);
 }
 
-/* NOVO: Layout Principal */
+/* Layout Principal */
 .container-principal {
     display: flex;
     gap: 30px;
@@ -43,44 +42,99 @@ h2 { border-bottom: 2px solid var(--primary-color); padding-bottom: 5px; margin-
 button { cursor: pointer; border-radius: 5px; border: none; padding: 10px 15px; font-size: 1rem; }
 #btnAbrirModal { background-color: var(--primary-color); color: white; width: 100%; }
 
-/* NOVO: Estilos da Tabela */
+/* Card de Ação (DRE) */
+.card-acao {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    margin-top: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.card-acao h2 {
+    margin-top: 0;
+    border: none;
+}
+.botoes-relatorio {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+.botoes-relatorio button {
+    flex-grow: 1;
+}
+#btn-gerar-dre {
+    background-color: var(--success-color);
+    color: white;
+}
+.btn-pdf {
+    background-color: var(--error-color);
+    color: white;
+}
+
+/* Estilos da Tabela */
 .tabela-container {
     background-color: white;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     overflow: hidden;
+    margin-bottom: 30px;
 }
-#tabela-lancamentos {
+#tabela-lancamentos, #tabela-dre {
     width: 100%;
     border-collapse: collapse;
 }
-#tabela-lancamentos th, #tabela-lancamentos td {
+#tabela-lancamentos th, #tabela-lancamentos td,
+#tabela-dre th, #tabela-dre td {
     padding: 12px 15px;
     text-align: left;
     border-bottom: 1px solid var(--light-gray);
 }
-#tabela-lancamentos thead tr {
+#tabela-lancamentos thead tr, #tabela-dre thead tr {
     background-color: var(--primary-color);
     color: white;
     font-size: 0.9rem;
     text-transform: uppercase;
 }
-#tabela-lancamentos tbody tr:nth-child(even) {
+#tabela-dre thead tr {
+    background-color: var(--dark-gray);
+}
+#tabela-lancamentos tbody tr:nth-child(even),
+#tabela-dre tbody tr:nth-child(even) {
     background-color: #f8f9fa;
 }
-#tabela-lancamentos tbody tr:hover {
+#tabela-lancamentos tbody tr:hover,
+#tabela-dre tbody tr:hover {
     background-color: #e9ecef;
 }
 #tabela-lancamentos tfoot {
     font-weight: bold;
     color: var(--text-color);
 }
-#tabela-lancamentos .valor {
+#tabela-lancamentos .valor, #tabela-dre td {
     text-align: right;
     font-family: 'Courier New', Courier, monospace;
 }
+#tabela-dre td:first-child {
+    text-align: left;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
 
-/* ... Resto dos estilos para o Modal, Toasts, etc. ... */
+/* Estilos da Tabela DRE */
+#tabela-dre {
+    font-size: 0.9rem;
+}
+#tabela-dre th, #tabela-dre td {
+    padding: 8px 10px;
+}
+#tabela-dre tbody .linha-sintetica {
+    font-weight: bold;
+    background-color: #f8f9fa;
+}
+#tabela-dre td.negativo {
+    color: var(--error-color);
+}
+
+
 /* Modal */
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 1000; }
 .modal-content { background: white; padding: 25px; border-radius: 8px; width: 90%; max-width: 800px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
