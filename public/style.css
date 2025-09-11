@@ -181,6 +181,7 @@ textarea { resize: vertical; }
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
+
 /* Notificações (Toasts) */
 #toast-container { position: fixed; top: 20px; right: 20px; z-index: 2000; }
 .toast {
